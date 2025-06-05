@@ -1,12 +1,13 @@
+name: KG-RAG-Prototype
 services:
   lightrag:
     container_name: lightrag
-    image: ghcr.io/hkuds/lightrag:latest
+    image: lightrag:latest
     build:
       context: .
       dockerfile: Dockerfile
       tags:
-        - ghcr.io/hkuds/lightrag:latest
+        - lightrag:latest
     ports:
       - "${PORT:-9621}:9621"
     volumes:
@@ -19,3 +20,23 @@ services:
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+  ollama:
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - driver: nvidia
+                          count: all
+                          capabilities:
+                              - gpu
+        volumes:
+            - data:/root/.ollama
+        ports:
+            - 11434:11434
+        container_name: ollama
+        restart: unless-stopped
+        image: ollama/ollama:latest
+volumes:
+    data:
+        external: false
+        name: ollama-data
